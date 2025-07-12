@@ -43,7 +43,7 @@ def classify_message(state: State):
             ]
     )
 
-    result = chat_result.choices[0].message.parsed.is_coding_question
+    result = chat_result.choices[0].message.parsed.is_coding_question if chat_result.choices[0].message.parsed else None
 
     print("Classifier result:",  result)
 
@@ -115,17 +115,17 @@ def coding_query_accuracy(state: State):
     You're an expert coding evaluating system. You're job is to judge and evaluate the content and give the accuracy of the code.
     Return the response in specified JSON format only.
 """
-
-    result = client.beta.chat.completions.parse(
-        model="gpt-4.1",
-        response_format=CodingAccuracyResponse,
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": llm_response}
-        ]
+    if llm_response:
+        result = client.beta.chat.completions.parse(
+            model="gpt-4.1",
+            response_format=CodingAccuracyResponse,
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": str(llm_response)}
+            ]
 )
     
-    response = result.choices[0].message.parsed.coding_query_accuracy
+    response = result.choices[0].message.parsed.coding_query_accuracy if result.choices[0].message.parsed else None
 
     state["accuracy_percentage"] = response
     return state
